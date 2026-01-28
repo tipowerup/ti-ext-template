@@ -131,6 +131,24 @@ class ExtensionSetup
             $valid = $this->validateDescription($this->config['extension_description']);
         } while (!$valid);
 
+        // License type (free or paid)
+        $this->printHeader('License Type');
+        echo "Choose the license type for your extension:\n";
+        echo "  " . $this->colorize('1', 'yellow') . " - Free (MIT License) - Open source, can be freely distributed\n";
+        echo "  " . $this->colorize('2', 'yellow') . " - Paid (TI Powerup License) - Commercial, restricted distribution\n";
+        echo "\n";
+
+        do {
+            $licenseChoice = $this->prompt('Enter choice (1 or 2)', true);
+            $valid = in_array($licenseChoice, ['1', '2'], true);
+            if (!$valid) {
+                $this->printError("Please enter 1 for Free or 2 for Paid");
+            }
+        } while (!$valid);
+
+        $this->config['is_free'] = ($licenseChoice === '1');
+        $this->config['license_type'] = $this->config['is_free'] ? 'MIT' : 'TI Powerup License';
+
         // Generate derived values
         $this->config['composer_package'] = $this->config['vendor_name'] . '/ti-ext-' . $this->config['extension_slug'];
         $this->config['extension_code'] = $this->config['vendor_name'] . '.' . str_replace('-', '', $this->config['extension_slug']);
@@ -150,12 +168,18 @@ class ExtensionSetup
         echo sprintf("PHP Namespace:      %s\n", $this->colorize($this->config['php_namespace'], 'green'));
         echo sprintf("Translation Key:    %s\n", $this->colorize($this->config['translation_key'], 'green'));
         echo sprintf("Description:        %s\n", $this->colorize($this->config['extension_description'], 'green'));
+        echo sprintf("License:            %s\n", $this->colorize($this->config['license_type'], $this->config['is_free'] ? 'green' : 'yellow'));
         echo "\n";
     }
 
     private function applyConfiguration(): void
     {
         $this->printHeader('Applying Configuration');
+
+        // Handle license files
+        $this->printInfo('Setting up license...');
+        $this->setupLicense();
+        $this->printSuccess('License configured (' . $this->config['license_type'] . ')');
 
         // Update composer.json
         $this->printInfo('Updating composer.json...');
@@ -166,6 +190,7 @@ class ExtensionSetup
             self::TEMPLATE_VALUES['namespace'] => $this->config['php_namespace'],
             self::TEMPLATE_VALUES['extension_code'] => $this->config['extension_code'],
             self::TEMPLATE_VALUES['extension_name'] => $this->config['extension_name'],
+            '"license": "MIT"' => '"license": "' . ($this->config['is_free'] ? 'MIT' : 'proprietary') . '"',
         ]);
         $this->printSuccess('composer.json updated');
 
@@ -176,23 +201,21 @@ class ExtensionSetup
         ]);
         $this->printSuccess('Extension.php updated');
 
-        // Update README.md
-        $this->printInfo('Updating README.md...');
+        // Swap README files
+        $this->printInfo('Setting up README.md...');
+        if (file_exists('README-TEMPLATE.md')) {
+            @unlink('README.md');
+            rename('README-TEMPLATE.md', 'README.md');
+        }
         $this->replaceInFile('README.md', [
             self::TEMPLATE_VALUES['extension_name'] => $this->config['extension_name'],
             self::TEMPLATE_VALUES['extension_description'] => $this->config['extension_description'],
             self::TEMPLATE_VALUES['composer_package'] => $this->config['composer_package'],
             self::TEMPLATE_VALUES['namespace'] => $this->config['php_namespace'],
             self::TEMPLATE_VALUES['extension_code'] => $this->config['extension_code'],
+            self::TEMPLATE_VALUES['extension_slug'] => $this->config['full_slug'],
         ]);
         $this->printSuccess('README.md updated');
-
-        // Update tests/Pest.php
-        $this->printInfo('Updating tests/Pest.php...');
-        $this->replaceInFile('tests/Pest.php', [
-            self::TEMPLATE_VALUES['namespace'] => $this->config['php_namespace'],
-        ]);
-        $this->printSuccess('tests/Pest.php updated');
 
         // Update resources/lang/en/default.php
         $this->printInfo('Updating resources/lang/en/default.php...');
@@ -200,6 +223,38 @@ class ExtensionSetup
             self::TEMPLATE_VALUES['translation_key'] => $this->config['translation_key'],
         ]);
         $this->printSuccess('default.php updated');
+    }
+
+    private function setupLicense(): void
+    {
+        $year = date('Y');
+
+        if ($this->config['is_free']) {
+            $sourceFile = 'LICENSE-TEMPLATE-FREE.md';
+            $deleteFile = 'LICENSE-TEMPLATE-PAID.md';
+        } else {
+            $sourceFile = 'LICENSE-TEMPLATE-PAID.md';
+            $deleteFile = 'LICENSE-TEMPLATE-FREE.md';
+        }
+
+        // Delete existing LICENSE.md if present
+        if (file_exists('LICENSE.md')) {
+            @unlink('LICENSE.md');
+        }
+
+        // Read the source license and replace year placeholder
+        if (file_exists($sourceFile)) {
+            $content = file_get_contents($sourceFile);
+            $content = str_replace('[YEAR]', $year, $content);
+            file_put_contents('LICENSE.md', $content);
+            @unlink($sourceFile);
+            $this->printSuccess("Created LICENSE.md from {$sourceFile}");
+        }
+
+        // Delete the other license file
+        if (file_exists($deleteFile)) {
+            @unlink($deleteFile);
+        }
     }
 
     private function cleanup(): void
@@ -217,6 +272,14 @@ class ExtensionSetup
                 $this->printSuccess('SETUP.md removed');
             }
 
+            if (file_exists('license-headers.md') && @unlink('license-headers.md')) {
+                $this->printSuccess('license-headers.md removed');
+            }
+
+            if (file_exists('tipowerup-license.md') && @unlink('tipowerup-license.md')) {
+                $this->printSuccess('tipowerup-license.md removed');
+            }
+
             // Self-destruct
             $this->printInfo('Removing setup script...');
             @unlink(__FILE__);
@@ -225,6 +288,8 @@ class ExtensionSetup
             $this->printInfo('Setup files kept. You can delete them manually later:');
             echo "  - " . $this->colorize('setup.php', 'yellow') . "\n";
             echo "  - " . $this->colorize('SETUP.md', 'yellow') . "\n";
+            echo "  - " . $this->colorize('license-headers.md', 'yellow') . "\n";
+            echo "  - " . $this->colorize('tipowerup-license.md', 'yellow') . "\n";
         }
     }
 

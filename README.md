@@ -1,54 +1,32 @@
-# TiPowerUp Template
+# TiPowerUp Extension Template
 
-TastyIgniter extension template for TiPowerUp
+A starter template for creating TastyIgniter extensions.
 
-## Installation
+## Usage
 
-```bash
-composer require tipowerup/ti-ext-template
-```
-
-Then install in TastyIgniter:
+### 1. Clone the Template
 
 ```bash
-php artisan igniter:extension-install tipowerup.template
+git clone https://github.com/tipowerup/ti-ext-template.git my-extension
+cd my-extension
+rm -rf .git
 ```
 
-## Requirements
-
-- TastyIgniter v4.0+
-- PHP 8.2+
-
-## Development
+### 2. Run Setup
 
 ```bash
-# Install dependencies
-composer install
-
-# Run tests
-composer test
-
-# Fix code style
-composer test:lint-fix
-
-# Run static analysis
-composer test:static
+php setup.php
 ```
 
-## Directory Structure
+The wizard will prompt for:
 
-```
-ti-ext-template/
-├── composer.json           # Package configuration
-├── src/
-│   └── Extension.php       # Main extension class
-├── resources/
-│   └── lang/en/            # Language files
-├── database/
-│   └── migrations/         # Database migrations
-└── tests/                  # Pest tests
-```
+| Prompt | Example |
+|--------|---------|
+| Extension name | `My Awesome Extension` |
+| Extension slug | `my-extension` |
+| Vendor name | `tipowerup` |
+| PHP namespace | `Tipowerup\MyExtension` |
+| Description | `Does awesome things` |
+| License type | `1` (Free) or `2` (Paid) |
 
-## License
-
-MIT License - see [LICENSE.md](LICENSE.md)
+🎉 **That's it!** Now go build something awesome! 🚀
