@@ -9,7 +9,6 @@ declare(strict_types=1);
  * This script configures a new TastyIgniter extension from the template.
  * Run: php setup.php
  */
-
 class ExtensionSetup
 {
     private const TEMPLATE_VALUES = [
@@ -24,7 +23,9 @@ class ExtensionSetup
     ];
 
     private array $config = [];
+
     private bool $isWindows;
+
     private bool $supportsColor;
 
     public function __construct()
@@ -134,15 +135,15 @@ class ExtensionSetup
         // License type (free or paid)
         $this->printHeader('License Type');
         echo "Choose the license type for your extension:\n";
-        echo "  " . $this->colorize('1', 'yellow') . " - Free (MIT License) - Open source, can be freely distributed\n";
-        echo "  " . $this->colorize('2', 'yellow') . " - Paid (TI Powerup License) - Commercial, restricted distribution\n";
+        echo '  '.$this->colorize('1', 'yellow')." - Free (MIT License) - Open source, can be freely distributed\n";
+        echo '  '.$this->colorize('2', 'yellow')." - Paid (TI Powerup License) - Commercial, restricted distribution\n";
         echo "\n";
 
         do {
             $licenseChoice = $this->prompt('Enter choice (1 or 2)', true);
             $valid = in_array($licenseChoice, ['1', '2'], true);
             if (!$valid) {
-                $this->printError("Please enter 1 for Free or 2 for Paid");
+                $this->printError('Please enter 1 for Free or 2 for Paid');
             }
         } while (!$valid);
 
@@ -150,11 +151,11 @@ class ExtensionSetup
         $this->config['license_type'] = $this->config['is_free'] ? 'MIT' : 'TI Powerup License';
 
         // Generate derived values
-        $this->config['composer_package'] = $this->config['vendor_name'] . '/ti-ext-' . $this->config['extension_slug'];
-        $this->config['extension_code'] = $this->config['vendor_name'] . '.' . str_replace('-', '', $this->config['extension_slug']);
+        $this->config['composer_package'] = $this->config['vendor_name'].'/ti-ext-'.$this->config['extension_slug'];
+        $this->config['extension_code'] = $this->config['vendor_name'].'.'.str_replace('-', '', $this->config['extension_slug']);
         $this->config['translation_key'] = $this->config['extension_code'];
         $this->config['namespace_escaped'] = str_replace('\\', '\\\\', $this->config['php_namespace']);
-        $this->config['full_slug'] = 'ti-ext-' . $this->config['extension_slug'];
+        $this->config['full_slug'] = 'ti-ext-'.$this->config['extension_slug'];
     }
 
     private function showSummary(): void
@@ -179,7 +180,7 @@ class ExtensionSetup
         // Handle license files
         $this->printInfo('Setting up license...');
         $this->setupLicense();
-        $this->printSuccess('License configured (' . $this->config['license_type'] . ')');
+        $this->printSuccess('License configured ('.$this->config['license_type'].')');
 
         // Update composer.json
         $this->printInfo('Updating composer.json...');
@@ -190,7 +191,7 @@ class ExtensionSetup
             self::TEMPLATE_VALUES['namespace'] => $this->config['php_namespace'],
             self::TEMPLATE_VALUES['extension_code'] => $this->config['extension_code'],
             self::TEMPLATE_VALUES['extension_name'] => $this->config['extension_name'],
-            '"license": "MIT"' => '"license": "' . ($this->config['is_free'] ? 'MIT' : 'proprietary') . '"',
+            '"license": "MIT"' => '"license": "'.($this->config['is_free'] ? 'MIT' : 'proprietary').'"',
         ]);
         $this->printSuccess('composer.json updated');
 
@@ -223,6 +224,20 @@ class ExtensionSetup
             self::TEMPLATE_VALUES['translation_key'] => $this->config['translation_key'],
         ]);
         $this->printSuccess('default.php updated');
+
+        // Update test files
+        $this->printInfo('Updating test files...');
+        $this->replaceInFile('tests/TestCase.php', [
+            self::TEMPLATE_VALUES['namespace_escaped'] => $this->config['namespace_escaped'],
+            self::TEMPLATE_VALUES['namespace'] => $this->config['php_namespace'],
+        ]);
+        $this->replaceInFile('tests/Pest.php', [
+            self::TEMPLATE_VALUES['namespace'] => $this->config['php_namespace'],
+        ]);
+        $this->replaceInFile('tests/Feature/ExtensionTest.php', [
+            self::TEMPLATE_VALUES['namespace'] => $this->config['php_namespace'],
+        ]);
+        $this->printSuccess('Test files updated');
     }
 
     private function setupLicense(): void
@@ -286,35 +301,35 @@ class ExtensionSetup
             $this->printSuccess('Setup files removed');
         } else {
             $this->printInfo('Setup files kept. You can delete them manually later:');
-            echo "  - " . $this->colorize('setup.php', 'yellow') . "\n";
-            echo "  - " . $this->colorize('SETUP.md', 'yellow') . "\n";
-            echo "  - " . $this->colorize('license-headers.md', 'yellow') . "\n";
-            echo "  - " . $this->colorize('tipowerup-license.md', 'yellow') . "\n";
+            echo '  - '.$this->colorize('setup.php', 'yellow')."\n";
+            echo '  - '.$this->colorize('SETUP.md', 'yellow')."\n";
+            echo '  - '.$this->colorize('license-headers.md', 'yellow')."\n";
+            echo '  - '.$this->colorize('tipowerup-license.md', 'yellow')."\n";
         }
     }
 
     private function showSuccessMessage(): void
     {
         $this->printHeader('Setup Complete!');
-        echo $this->colorize("Your extension '{$this->config['extension_name']}' has been configured successfully!", 'green') . "\n\n";
+        echo $this->colorize("Your extension '{$this->config['extension_name']}' has been configured successfully!", 'green')."\n\n";
 
         $this->printInfo('Next steps:');
         echo "  1. Install dependencies:\n";
-        echo "     " . $this->colorize('composer install', 'yellow') . "\n";
+        echo '     '.$this->colorize('composer install', 'yellow')."\n";
         echo "\n";
         echo "  2. Start building your extension in:\n";
-        echo "     - " . $this->colorize('src/Extension.php', 'yellow') . " for main extension class\n";
-        echo "     - " . $this->colorize('src/Models/', 'yellow') . " for Eloquent models\n";
-        echo "     - " . $this->colorize('src/Http/Controllers/', 'yellow') . " for controllers\n";
-        echo "     - " . $this->colorize('database/migrations/', 'yellow') . " for migrations\n";
-        echo "     - " . $this->colorize('resources/views/', 'yellow') . " for Blade views\n";
-        echo "     - " . $this->colorize('resources/lang/', 'yellow') . " for translations\n";
+        echo '     - '.$this->colorize('src/Extension.php', 'yellow')." for main extension class\n";
+        echo '     - '.$this->colorize('src/Models/', 'yellow')." for Eloquent models\n";
+        echo '     - '.$this->colorize('src/Http/Controllers/', 'yellow')." for controllers\n";
+        echo '     - '.$this->colorize('database/migrations/', 'yellow')." for migrations\n";
+        echo '     - '.$this->colorize('resources/views/', 'yellow')." for Blade views\n";
+        echo '     - '.$this->colorize('resources/lang/', 'yellow')." for translations\n";
         echo "\n";
         echo "  3. Run tests:\n";
-        echo "     " . $this->colorize('composer test', 'yellow') . "\n";
+        echo '     '.$this->colorize('composer test', 'yellow')."\n";
         echo "\n";
         echo "  4. Install in TastyIgniter:\n";
-        echo "     " . $this->colorize('php artisan igniter:extension-install ' . $this->config['extension_code'], 'yellow') . "\n";
+        echo '     '.$this->colorize('php artisan igniter:extension-install '.$this->config['extension_code'], 'yellow')."\n";
         echo "\n";
 
         $this->printSuccess('Happy coding!');
@@ -328,6 +343,7 @@ class ExtensionSetup
             if ($default !== '') {
                 return $default;
             }
+
             throw new RuntimeException('Cannot prompt for input in non-interactive environment');
         }
 
@@ -378,8 +394,10 @@ class ExtensionSetup
     {
         if (!preg_match('/^[a-z0-9]+(-[a-z0-9]+)*$/', $slug)) {
             $this->printError("Invalid format. Use lowercase letters, numbers, and hyphens only (e.g., 'my-extension')");
+
             return false;
         }
+
         return true;
     }
 
@@ -389,23 +407,28 @@ class ExtensionSetup
         foreach ($segments as $segment) {
             if (preg_match('/^[0-9]/', $segment)) {
                 $this->printError("Invalid format. Namespace segments cannot start with numbers (segment: '{$segment}')");
+
                 return false;
             }
         }
 
         if (!preg_match('/^[A-Z][a-zA-Z0-9]*(\\\\[A-Z][a-zA-Z0-9]*)*$/', $namespace)) {
             $this->printError("Invalid format. Use PascalCase with backslashes (e.g., 'MyCompany\\MyExtension')");
+
             return false;
         }
+
         return true;
     }
 
     private function validateDescription(string $description): bool
     {
         if (trim($description) === '') {
-            $this->printError("Description cannot be empty or whitespace only");
+            $this->printError('Description cannot be empty or whitespace only');
+
             return false;
         }
+
         return true;
     }
 
@@ -413,6 +436,7 @@ class ExtensionSetup
     {
         $vendorPascal = str_replace(' ', '', ucwords(str_replace('-', ' ', $vendor)));
         $slugPascal = str_replace(' ', '', ucwords(str_replace('-', ' ', $slug)));
+
         return "{$vendorPascal}\\{$slugPascal}";
     }
 
@@ -420,12 +444,14 @@ class ExtensionSetup
     {
         if (!file_exists($file)) {
             $this->printWarning("File not found: {$file}");
+
             return;
         }
 
         $content = @file_get_contents($file);
         if ($content === false) {
             $this->printError("Failed to read file: {$file}");
+
             throw new RuntimeException("Cannot read file: {$file}");
         }
 
@@ -435,6 +461,7 @@ class ExtensionSetup
 
         if (@file_put_contents($file, $content) === false) {
             $this->printError("Failed to write file: {$file}");
+
             throw new RuntimeException("Cannot write file: {$file}");
         }
     }
@@ -455,31 +482,31 @@ class ExtensionSetup
             'reset' => "\033[0m",
         ];
 
-        return ($colors[$color] ?? '') . $text . $colors['reset'];
+        return ($colors[$color] ?? '').$text.$colors['reset'];
     }
 
     private function printSuccess(string $message): void
     {
         $symbol = $this->supportsColor ? '✓' : '[OK]';
-        echo $this->colorize($symbol . ' ', 'green') . $message . "\n";
+        echo $this->colorize($symbol.' ', 'green').$message."\n";
     }
 
     private function printError(string $message): void
     {
         $symbol = $this->supportsColor ? '✗' : '[ERROR]';
-        echo $this->colorize($symbol . ' ', 'red') . $message . "\n";
+        echo $this->colorize($symbol.' ', 'red').$message."\n";
     }
 
     private function printInfo(string $message): void
     {
         $symbol = $this->supportsColor ? 'ℹ' : '[INFO]';
-        echo $this->colorize($symbol . ' ', 'blue') . $message . "\n";
+        echo $this->colorize($symbol.' ', 'blue').$message."\n";
     }
 
     private function printWarning(string $message): void
     {
         $symbol = $this->supportsColor ? '⚠' : '[WARN]';
-        echo $this->colorize($symbol . ' ', 'yellow') . $message . "\n";
+        echo $this->colorize($symbol.' ', 'yellow').$message."\n";
     }
 
     private function printHeader(string $message): void
@@ -488,23 +515,23 @@ class ExtensionSetup
             ? '═══════════════════════════════════════════════'
             : '===============================================';
 
-        echo "\n" . $this->colorize($divider, 'blue') . "\n";
-        echo $this->colorize("  {$message}", 'blue') . "\n";
-        echo $this->colorize($divider, 'blue') . "\n\n";
+        echo "\n".$this->colorize($divider, 'blue')."\n";
+        echo $this->colorize("  {$message}", 'blue')."\n";
+        echo $this->colorize($divider, 'blue')."\n\n";
     }
 }
 
 // Check if running from command line
 if (php_sapi_name() !== 'cli') {
-    die("This script must be run from the command line.\n");
+    exit("This script must be run from the command line.\n");
 }
 
 // Run the setup
 try {
-    $setup = new ExtensionSetup();
+    $setup = new ExtensionSetup;
     $setup->run();
 } catch (Exception $e) {
-    $tempSetup = new ExtensionSetup();
+    $tempSetup = new ExtensionSetup;
     $reflector = new ReflectionClass($tempSetup);
     $supportsColorProperty = $reflector->getProperty('supportsColor');
     $supportsColorProperty->setAccessible(true);
@@ -514,6 +541,6 @@ try {
     $errorColor = $supportsColor ? "\033[0;31m" : '';
     $reset = $supportsColor ? "\033[0m" : '';
 
-    echo "\n" . $errorColor . $errorSymbol . ' Error: ' . $e->getMessage() . $reset . "\n";
+    echo "\n".$errorColor.$errorSymbol.' Error: '.$e->getMessage().$reset."\n";
     exit(1);
 }

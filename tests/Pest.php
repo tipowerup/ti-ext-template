@@ -2,4 +2,5 @@
 
 declare(strict_types=1);
 
-uses()->in(__DIR__);
+uses(Tipowerup\Template\Tests\TestCase::class)->in('Feature');
+uses()->in('Unit');

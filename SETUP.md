@@ -33,7 +33,10 @@ namespace YourVendor\YourExtension;
 
 ### 3. Update Tests
 
-Update `tests/Pest.php` namespace if needed.
+Update the namespace in these test files:
+- `tests/TestCase.php` — change namespace and Extension class reference
+- `tests/Pest.php` — change TestCase namespace
+- `tests/Feature/ExtensionTest.php` — change Extension use statement
 
 ### 4. Install Dependencies
 
@@ -61,7 +64,11 @@ ti-ext-{name}/
 │   └── views/              # Blade templates (create as needed)
 ├── database/
 │   └── migrations/         # Database migrations
-└── tests/                  # Pest tests
+└── tests/
+    ├── TestCase.php         # Base TestCase (extends tipowerup/testbench)
+    ├── Pest.php             # Pest configuration
+    ├── Feature/             # Integration tests (full Laravel + TI context)
+    └── Unit/                # Pure unit tests (no framework needed)
 ```
 
 ## Extension Class Methods
