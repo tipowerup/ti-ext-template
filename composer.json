@@ -5,12 +5,17 @@
     "license": "MIT",
     "authors": [
         {
-            "name": "TiPowerUp",
-            "email": "hello@tipowerup.com"
+            "name": "TiPowerUp Team",
+            "email": "support@tipowerup.com"
         }
     ],
+    "keywords": [
+        "tastyigniter",
+        "tipowerup",
+        "theme"
+    ],
     "require": {
-        "php": "^8.2",
+        "php": "^8.2 || ^8.3",
         "tastyigniter/core": "^v4.0"
     },
     "require-dev": {
